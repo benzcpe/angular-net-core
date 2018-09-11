@@ -1,6 +1,15 @@
 
 #include "DHT.h"
 
+#include <Wire.h>
+//#include <LCD.h>
+#include <LiquidCrystal_I2C.h>
+#define I2C_ADDR 0x27 // <
+#define BACKLIGHT_PIN 3
+
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+
+
 #define DHTPIN 2 
  
 #define DHTTYPE DHT11  
@@ -33,7 +42,7 @@ float           CO2Curve[3]  =  {2.602,ZERO_POINT_VOLTAGE,(REACTION_VOLTGAE/(2.6
 int  PH, sensorValue, CO2;
 int Moisture;
 
-const float VRefer = 3.3;       // voltage of adc reference
+const float VRefer =  5.0; // 3.3;       // voltage of adc reference
 
 
 DHT dht(DHTPIN, DHTTYPE);
@@ -44,6 +53,13 @@ void setup() {
 
   pinMode(BOOL_PIN, INPUT);                        //set pin to input
   digitalWrite(BOOL_PIN, HIGH);                    //turn on pullup resistors
+
+  lcd.begin();
+  // Print a message to the LCD.
+  lcd.print(""); //ฟังก์ชั่นในการกำหนดข้อความที่ต้องการแสดงผล
+  lcd.setCursor(0, 1); //ฟังก์ชั่นในการกำหนดตำแหน่ง Cursor
+  lcd.print(" Smart Farm Project ");
+
 }
 
 void loop() {
@@ -81,8 +97,8 @@ void loop() {
     Serial.print("PH: ");
    Serial.print(PH/10);Serial.print(".");Serial.println(PH%10);
 
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
+  int h = dht.readHumidity();
+  int t = dht.readTemperature();
   int sensorValue;
   
   Serial.print("Humidity: "); 
@@ -99,6 +115,7 @@ void loop() {
     Vout = readO2Vout();
     Serial.print(Vout);
     Serial.print(" V, Concentration of O2 is ");
+    float o2 = readConcentration();
     Serial.print(readConcentration());
     Serial.println(" %");
 
@@ -129,8 +146,44 @@ void loop() {
   
    Serial.println("");
 
- 
-   delay(5000); //wait for half a second, so it is easier to read
+
+  lcd.clear();
+  lcd.home();
+  String sMoisture = "Soil Moi:";
+  sMoisture += Moisture;
+  sMoisture += "% PH:";
+  sMoisture +=PH/10;
+  sMoisture += ".";
+  sMoisture += PH%10;
+
+  String sTemp = "Temp:";
+  sTemp += t;
+  sTemp += "C Hum:";
+  sTemp += h;
+  sTemp +="%";
+
+   String sGas = "O2:";
+   sGas += o2;
+   sGas += "% CO2:";
+   if (percentage <= 0) {
+       sGas += "<400";
+    } else {
+        sGas += percentage;
+    }
+
+   // sGas += "ppm";
+   
+  String sWater = "Water: ON/OFF";
+  
+  lcd.print(sMoisture); //ฟังก์ชั่นในการกำหนดข้อความที่ต้องการแสดงผล
+  lcd.setCursor(0, 1); //ฟังก์ชั่นในการกำหนดตำแหน่ง Cursor
+  lcd.print(sTemp);
+  lcd.setCursor(0, 2);
+  lcd.print(sGas);
+  lcd.setCursor(0, 3);
+  lcd.print(sWater);
+  
+  delay(3000); //wait for half a second, so it is easier to read
 }
 
 
