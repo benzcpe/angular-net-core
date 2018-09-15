@@ -1,3 +1,6 @@
+#include "CO2Sensor.h"
+
+CO2Sensor co2Sensor(A3, 0.99, 100);
 
 #include "DHT.h"
 
@@ -21,7 +24,7 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 #define         DC_GAIN                      (8.5)   //define the DC gain of amplifier
  
 /***********************Software Related Macros************************************/
-#define         READ_SAMPLE_INTERVAL         (50)    //define how many samples you are going to take in normal operation
+#define         READ_SAMPLE_INTERVAL         (5)//(50)    //define how many samples you are going to take in normal operation
 #define         READ_SAMPLE_TIMES            (5)     //define the time interval(in milisecond) between each samples in 
                                                      //normal operation
  
@@ -49,7 +52,7 @@ DHT dht(DHTPIN, DHTTYPE);
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   pinMode(BOOL_PIN, INPUT);                        //set pin to input
   digitalWrite(BOOL_PIN, HIGH);                    //turn on pullup resistors
@@ -60,9 +63,16 @@ void setup() {
   lcd.setCursor(0, 1); //ฟังก์ชั่นในการกำหนดตำแหน่ง Cursor
   lcd.print(" Smart Farm Project ");
 
+  co2Sensor.calibrate();
+
 }
 
 void loop() {
+
+  int val = co2Sensor.read();
+  Serial.print("CO2 value: ");
+  Serial.println(val);
+  
    // put your main code here, to run repeatedly:
    unsigned char  i;
  
@@ -120,7 +130,19 @@ void loop() {
     Serial.println(" %");
 
 
-    int percentage;
+  int  lettura = MGRead2(MG_PIN);
+  lettura = map(lettura,0,9650,350,10000);
+   //lettura = map(lettura,0,1023,350,10000);
+  // Serial.print("Vecchia lettura: "); //old reading
+   //Serial.print(letturaOld);
+    Serial.print("CO2:");
+
+        Serial.print(lettura);
+
++
+    Serial.print( " ppm " );  
+
+    /*int percentage;
     float volts;
  
     volts = MGRead(MG_PIN);
@@ -142,9 +164,8 @@ void loop() {
         Serial.println( "=====BOOL is HIGH======" );
     } else {
         Serial.println( "=====BOOL is LOW======" );
-    }
-  
-   Serial.println("");
+    }*/
+
 
 
   lcd.clear();
@@ -165,13 +186,14 @@ void loop() {
    String sGas = "O2:";
    sGas += o2;
    sGas += "% CO2:";
-   if (percentage <= 0) {
+   /*if (percentage <= 0) {
        sGas += "<400";
     } else {
         sGas += percentage;
     }
-
-   // sGas += "ppm";
+    */
+    sGas += lettura;
+    sGas += "ppm";
    
   String sWater = "Water: ON/OFF";
   
@@ -228,6 +250,20 @@ float MGRead(int mg_pin)
         delay(READ_SAMPLE_INTERVAL);
     }
     v = (v/READ_SAMPLE_TIMES) *5/1024 ;
+    return v;  
+}
+
+
+ float MGRead2(int mg_pin)
+{
+    int i;
+    float v=0;
+ 
+    for (i=0;i<READ_SAMPLE_TIMES;i++) {
+        v += analogRead(mg_pin);
+        delay(READ_SAMPLE_INTERVAL);
+    }
+    v = (v/READ_SAMPLE_TIMES);
     return v;  
 }
  
