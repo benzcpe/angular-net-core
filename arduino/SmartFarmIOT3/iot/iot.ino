@@ -5,45 +5,41 @@ const char* password = "0850299990";
 
 #include <SoftwareSerial.h>
 
-SoftwareSerial chat(D2, D3); // RX, TX
+SoftwareSerial NodeSerial(D2,D3); // RX | TX
 
 String a;
 
 void setup() {
 
-  Serial.begin(9600);
+  Serial.begin(115200);
 
-  chat.begin(4800);
+  pinMode(D2, INPUT); 
+  pinMode(D3, OUTPUT); 
 
- 
 
-  delay(10);
+  NodeSerial.begin(57600);
 
 }
 
 void loop() {
 
-Serial.println("Please wait Serial..");
+  while (NodeSerial.available() > 0) 
+  {
 
-  while (a == "") {
+   float f_data = NodeSerial.parseFloat(); 
 
-   // chat.print("Question1"); // ส่งหัวข้อคำถาม ว่า Question1 ไปยัง Arduino
+    if (NodeSerial.read() == '\n') 
+    {
 
-    a = chat.readString();  // อ่าน Serial และนำไปเก็บในตัวแปร A
+          Serial.print("NodeMCU or ESP8266"); Serial.print(" : "); 
+          Serial.println(f_data);  
 
-    if(a != ""){
-    Serial.println(a);
+    }
 
-  
-
-   // Serial.print(".");
-  }
-
-   delay(100);
+    delay(50);
 
   }
 
-  a = "";
-  delay(1000);
+  delay(100);
 
 }
