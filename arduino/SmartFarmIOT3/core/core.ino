@@ -50,6 +50,17 @@ const float VRefer =  5.0; // 3.3;       // voltage of adc reference
 
 DHT dht(DHTPIN, DHTTYPE);
 
+
+int a = 13;
+
+int b = 25;
+
+#include <SoftwareSerial.h>
+
+SoftwareSerial chat(3, 2); // RX, TX
+
+int i;
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -65,13 +76,14 @@ void setup() {
 
   co2Sensor.calibrate();
 
+  chat.begin(4800);
 }
 
 void loop() {
 
-  int val = co2Sensor.read();
-  Serial.print("CO2 value: ");
-  Serial.println(val);
+  
+  //Serial.print("CO2 value: ");
+  //Serial.println(val);
   
    // put your main code here, to run repeatedly:
    unsigned char  i;
@@ -129,8 +141,14 @@ void loop() {
     Serial.print(readConcentration());
     Serial.println(" %");
 
+  int co2 = co2Sensor.read();
 
-  int  lettura = MGRead2(MG_PIN);
+  Serial.print( "CO2: " );
+  Serial.print( co2 );
+  Serial.println( "ppm" );
+  Serial.println( "" );
+
+  /*int  lettura = MGRead2(MG_PIN);
   lettura = map(lettura,0,9650,350,10000);
    //lettura = map(lettura,0,1023,350,10000);
   // Serial.print("Vecchia lettura: "); //old reading
@@ -140,7 +158,8 @@ void loop() {
         Serial.print(lettura);
 
 +
-    Serial.print( " ppm " );  
+    Serial.println( " ppm " );  
+    Serial.println( "" ); */
 
     /*int percentage;
     float volts;
@@ -192,7 +211,7 @@ void loop() {
         sGas += percentage;
     }
     */
-    sGas += lettura;
+    sGas += co2;
     sGas += "ppm";
    
   String sWater = "Water: ON/OFF";
@@ -204,6 +223,33 @@ void loop() {
   lcd.print(sGas);
   lcd.setCursor(0, 3);
   lcd.print(sWater);
+
+   chat.print("Hello World!!!");
+
+  /*if (chat.readString()){
+
+     // chat.print(1);
+
+     if(chat.readString()== "Question1"){ //มีการถามคำถาม Question1 ส่งข้อมูลตัวแปร a ออกไป
+
+      chat.print(sTemp);
+
+     }
+
+     if(chat.readString()== "Question2"){ //มีการถามคำถาม Question2 ส่งข้อมูลตัวแปร b ออกไป
+
+      chat.print(sGas);
+
+     }
+
+     // Serial.print("Send = ");
+
+    //  Serial.println(i);
+
+  }
+
+ // i++;
+  */
   
   delay(3000); //wait for half a second, so it is easier to read
 }
