@@ -26,20 +26,33 @@ void loop() {
   while (NodeSerial.available() > 0) 
   {
 
-   float f_data = NodeSerial.parseFloat(); 
+    /*int i_data = NodeSerial.parseInt(); 
+    int i_data2 = NodeSerial.parseInt(); 
+   // int i_data3 = NodeSerial.parseInt(); 
+
+    float f_data = NodeSerial.parseFloat(); 
 
     if (NodeSerial.read() == '\n') 
+
     {
 
           Serial.print("NodeMCU or ESP8266"); Serial.print(" : "); 
+
+          Serial.print(i_data); Serial.print(" : "); 
+          Serial.print(i_data2); Serial.print(" : "); 
+         // Serial.print(i_data3); Serial.print(" : "); 
+
           Serial.println(f_data);  
 
-    }
+    }*/
 
-    delay(50);
+    String result = NodeSerial.readStringUntil('\n');
+    Serial.println(result); 
+
+    delay(100);
 
   }
 
-  delay(100);
+  delay(1000);
 
 }

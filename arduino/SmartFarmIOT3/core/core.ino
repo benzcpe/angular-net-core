@@ -1,65 +1,67 @@
-#include "CO2Sensor.h"
 
+// CO2
+#include "CO2Sensor.h"
 CO2Sensor co2Sensor(A3, 0.99, 100);
 
-#include "DHT.h"
+// O2
+const float VRefer =  5.0; // 3.3;       // voltage of adc reference
+#define PIN_O2 2
 
-#include <Wire.h>
-//#include <LCD.h>
+// Temperature and Humidity
+#include "DHT.h"
+#define DHTPIN 4  
+#define DHTTYPE DHT11  
+
+// Moisture
+#define PIN_Moisture 0
+#define PIN_PH 1
+
+// Node MCU connection
+#include <SoftwareSerial.h>
+SoftwareSerial NanoSerial(3, 2); // RX | TX
+DHT dht(DHTPIN, DHTTYPE);
+
+// LCD
 #include <LiquidCrystal_I2C.h>
 #define I2C_ADDR 0x27 // <
 #define BACKLIGHT_PIN 3
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
-
-#define DHTPIN 2 
- 
-#define DHTTYPE DHT11  
-
- 
-
-int  PH, sensorValue, CO2;
-int Moisture;
-
-const float VRefer =  5.0; // 3.3;       // voltage of adc reference
+// Sensor variable
+int CO2, T, H, Moisture, PH;
+float O2;
 
 
-DHT dht(DHTPIN, DHTTYPE);
-
-#include <SoftwareSerial.h>
-
-SoftwareSerial NanoSerial(3, 2); // RX | TX
-
-void setup() {
-  // put your setup code here, to run once:
+void setup()
+{  
+  
   Serial.begin(115200);
-
+  
   lcd.begin();
   // Print a message to the LCD.
   lcd.print(""); //ฟังก์ชั่นในการกำหนดข้อความที่ต้องการแสดงผล
   lcd.setCursor(0, 1); //ฟังก์ชั่นในการกำหนดตำแหน่ง Cursor
-  lcd.print(" Smart Farm Project ");
+  lcd.print(" -- Smart Farm -- ");
+
+
+  // Connect to nodemcu
+  pinMode(3,INPUT);
+  pinMode(2,OUTPUT);  
+  NanoSerial.begin(57600);
 
   co2Sensor.calibrate();
-
-  pinMode(3,INPUT);
-  pinMode(2,OUTPUT);
-  NanoSerial.begin(57600);
 }
 
 void loop() {
 
-
-   // put your main code here, to run repeatedly:
-   unsigned char  i;
+  // Moisture and PH
+  unsigned char  i;
  
-   Moisture = 0; 
-   for(i=0;i<10;i++){Moisture = Moisture + analogRead(0);delay(1);}
+  Moisture = 0; 
+   for(i=0;i<10;i++){Moisture = Moisture + analogRead(PIN_Moisture);delay(1);}
    Moisture = Moisture / 10; 
-   //Serial.print("Soil moisture real: ");
-  // Serial.println(Moisture);
-     
+
    if(Moisture >= 530){Moisture = ((Moisture - 550)/15) + 90;}else
    if(Moisture >= 430){Moisture = ((Moisture - 450)/10) + 80;}else
    if(Moisture >= 130){Moisture = ((Moisture - 130)/6) + 30;}else
@@ -68,53 +70,59 @@ void loop() {
    
    if(Moisture > 100){Moisture = 100;}
 
-   PH = 0;
-    for(i=0;i<10;i++){PH  = PH + analogRead(1);delay(1); } 
-    PH       = PH / 10;    
+    PH = 0;
+    for(i=0;i<10;i++){PH  = PH + analogRead(PIN_PH);delay(1); } 
+    PH = PH / 10;    
     if(PH >= 450){PH = 40-((PH - 450)/50);}else
     if(PH >= 280){PH = 50-((PH - 280)/17);}else
     if(PH >= 150){PH = 60-((PH - 150)/13);}else
     if(PH >=  20){PH = 70-((PH -  20)/13);}else
     if(PH >=   0){PH = 80-((PH -  0 )/2); }
-
+    
+    // Gas sensor
+    CO2 = co2Sensor.read();
+  
+    float Vout = readO2Vout();  
+    O2 = readConcentration();
+  
+    H = dht.readHumidity();
+    T = dht.readTemperature();
+  
+    Serial.print("Humidity: "); 
+    Serial.print(H);
+    Serial.print(" %\t");
+    Serial.print("Temperature: "); 
+    Serial.print(T);
+    Serial.println(" *C");  
 
    Serial.print("Soil moisture: ");
    Serial.print(Moisture);
    Serial.println(" %");
 
-    Serial.print("PH: ");
+   Serial.print("PH: ");
    Serial.print(PH/10);Serial.print(".");Serial.println(PH%10);
 
-  int h = dht.readHumidity();
-  int t = dht.readTemperature();
-  int sensorValue;
-  
-  Serial.print("Humidity: "); 
-  Serial.print(h);
-  Serial.print(" %\t");
-  Serial.print("Temperature: "); 
-  Serial.print(t);
-  Serial.println(" *C");
 
-  // put your main code here, to run repeatedly:
-    float Vout =0;
-    Serial.print("Vout =");
-
-    Vout = readO2Vout();
-    Serial.print(Vout);
-    Serial.print(" V, Concentration of O2 is ");
-    float o2 = readConcentration();
-    Serial.print(readConcentration());
-    Serial.println(" %");
-
-  int co2 = co2Sensor.read();
-
+  Serial.print("Vout =");
+  Serial.print(Vout);
+  Serial.print(" V, Concentration of O2 is ");
+  Serial.print(O2);
+  Serial.println(" %");
+    
   Serial.print( "CO2: " );
-  Serial.print( co2 );
+  Serial.print( CO2 );
+  // Serial.print( " : " );
+  // Serial.print( analogRead(3));
   Serial.println( "ppm" );
   Serial.println( "" );
 
-  
+  NanoSerial.print(T); NanoSerial.print(" ");
+  NanoSerial.print(H); NanoSerial.print(" ");
+  NanoSerial.print(Moisture); NanoSerial.print(" ");
+  NanoSerial.print(PH/10);NanoSerial.print(".");NanoSerial.print(PH%10); NanoSerial.print(" ");
+  NanoSerial.print(CO2); NanoSerial.print(" ");
+  NanoSerial.print(O2); NanoSerial.print("\n");
+
   lcd.clear();
   lcd.home();
   String sMoisture = "Soil Moi:";
@@ -125,16 +133,16 @@ void loop() {
   sMoisture += PH%10;
 
   String sTemp = "Temp:";
-  sTemp += t;
+  sTemp += T;
   sTemp += "C Hum:";
-  sTemp += h;
+  sTemp += H;
   sTemp +="%";
 
    String sGas = "O2:";
-   sGas += o2;
+   sGas += O2;
    sGas += "% CO2:";
 
-    sGas += co2;
+    sGas += CO2;
     sGas += "ppm";
    
   String sWater = "Water: ON/OFF";
@@ -147,19 +155,17 @@ void loop() {
   lcd.setCursor(0, 3);
   lcd.print(sWater);
 
-   NanoSerial.print(o2); 
-   NanoSerial.print("\n");
-  
-  delay(3000); //wait for half a second, so it is easier to read
+  delay(3000);
+
 }
 
-
+/************************ O2 ************************/
 float readO2Vout()
 {
     long sum = 0;
     for(int i=0; i<32; i++)
     {
-        sum += analogRead(2);
+        sum += analogRead(PIN_O2);
     }
 
     sum >>= 5;
