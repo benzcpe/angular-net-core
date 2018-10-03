@@ -1,32 +1,34 @@
-
+#include <SoftwareSerial.h>
 // CO2
-#include "CO2Sensor.h"
-CO2Sensor co2Sensor(A3, 0.99, 100);
+//#include "CO2Sensor.h"
+//CO2Sensor co2Sensor(A3, 0.99, 100);
+SoftwareSerial mySerial(A4, A5); // A4 - к TX сенсора, A5 - к RX
+
 
 // O2
 const float VRefer =  5.0; // 3.3;       // voltage of adc reference
-#define PIN_O2 2
+#define PIN_O2 A2
 
 // Temperature and Humidity
 #include "DHT.h"
 #define DHTPIN 4  
-#define DHTTYPE DHT11  
+#define DHTTYPE DHT22  
 
 // Moisture
 #define PIN_Moisture 0
 #define PIN_PH 1
 
 // Node MCU connection
-#include <SoftwareSerial.h>
+
 SoftwareSerial NanoSerial(3, 2); // RX | TX
 DHT dht(DHTPIN, DHTTYPE);
 
 // LCD
-#include <LiquidCrystal_I2C.h>
+/*#include <LiquidCrystal_I2C.h>
 #define I2C_ADDR 0x27 // <
 #define BACKLIGHT_PIN 3
 
-LiquidCrystal_I2C lcd(0x27, 20, 4);
+LiquidCrystal_I2C lcd(0x27, 20, 4);*/
 
 // Sensor variable
 int CO2, T, H, Moisture, PH;
@@ -38,11 +40,11 @@ void setup()
   
   Serial.begin(115200);
   
-  lcd.begin();
+  /*lcd.begin();
   // Print a message to the LCD.
   lcd.print(""); //ฟังก์ชั่นในการกำหนดข้อความที่ต้องการแสดงผล
   lcd.setCursor(0, 1); //ฟังก์ชั่นในการกำหนดตำแหน่ง Cursor
-  lcd.print(" -- Smart Farm -- ");
+  lcd.print(" -- Smart Farm -- ");*/
 
 
   // Connect to nodemcu
@@ -50,7 +52,9 @@ void setup()
   pinMode(2,OUTPUT);  
   NanoSerial.begin(57600);
 
-  co2Sensor.calibrate();
+   mySerial.begin(9600);
+
+ // co2Sensor.calibrate();
 }
 
 void loop() {
@@ -80,7 +84,9 @@ void loop() {
     if(PH >=   0){PH = 80-((PH -  0 )/2); }
     
     // Gas sensor
-    CO2 = co2Sensor.read();
+    //CO2 = co2Sensor.read();
+
+    CO2 = readCO2(); 
   
     float Vout = readO2Vout();  
     O2 = readConcentration();
@@ -116,13 +122,15 @@ void loop() {
   Serial.println( "ppm" );
   Serial.println( "" );
 
-  NanoSerial.print(T); NanoSerial.print(" ");
-  NanoSerial.print(H); NanoSerial.print(" ");
-  NanoSerial.print(Moisture); NanoSerial.print(" ");
-  NanoSerial.print(PH/10);NanoSerial.print(".");NanoSerial.print(PH%10); NanoSerial.print(" ");
-  NanoSerial.print(CO2); NanoSerial.print(" ");
+  NanoSerial.print(T); NanoSerial.print(";");
+  NanoSerial.print(H); NanoSerial.print(";");
+  NanoSerial.print(Moisture); NanoSerial.print(";");
+  NanoSerial.print(PH/10);NanoSerial.print(".");NanoSerial.print(PH%10); NanoSerial.print(";");
+  NanoSerial.print(CO2); NanoSerial.print(";");
   NanoSerial.print(O2); NanoSerial.print("\n");
 
+  // LCD
+ /*
   lcd.clear();
   lcd.home();
   String sMoisture = "Soil Moi:";
@@ -144,7 +152,8 @@ void loop() {
 
     sGas += CO2;
     sGas += "ppm";
-   
+
+  
   String sWater = "Water: ON/OFF";
   
   lcd.print(sMoisture); //ฟังก์ชั่นในการกำหนดข้อความที่ต้องการแสดงผล
@@ -153,7 +162,7 @@ void loop() {
   lcd.setCursor(0, 2);
   lcd.print(sGas);
   lcd.setCursor(0, 3);
-  lcd.print(sWater);
+  lcd.print(sWater);*/
 
   delay(3000);
 
@@ -184,4 +193,28 @@ float readConcentration()
     float Concentration = MeasuredVout * 0.21 / 2.0;
     float Concentration_Percentage=Concentration*100;
     return Concentration_Percentage;
+}
+
+/******************** CO2 *******************************/
+byte cmd[9] = {0xFF,0x01,0x86,0x00,0x00,0x00,0x00,0x00,0x79}; 
+unsigned char response[9];
+int readCO2()
+{
+  mySerial.write(cmd, 9);
+  memset(response, 0, 9);
+  mySerial.readBytes(response, 9);
+  int i;
+  byte crc = 0;
+  for (i = 1; i < 8; i++) crc+=response[i];
+  crc = 255 - crc;
+  crc++;
+
+  if ( !(response[0] == 0xFF && response[1] == 0x86 && response[8] == crc) ) {
+    return 0;
+  } else {
+    unsigned int responseHigh = (unsigned int) response[2];
+    unsigned int responseLow = (unsigned int) response[3];
+    unsigned int ppm = (256*responseHigh) + responseLow;
+    return ppm;
+  }
 }

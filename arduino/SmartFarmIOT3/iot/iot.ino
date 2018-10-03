@@ -7,6 +7,11 @@ const char* password = "0850299990";
 
 SoftwareSerial NodeSerial(D2,D3); // RX | TX
 
+#define turn_On 0
+#define turn_Off 1
+int RELAY1 = D5;
+int RELAY2 = D6;
+
 String a;
 
 void setup() {
@@ -16,6 +21,9 @@ void setup() {
   pinMode(D2, INPUT); 
   pinMode(D3, OUTPUT); 
 
+  pinMode(RELAY1, OUTPUT);
+  pinMode(RELAY2, OUTPUT);
+  
 
   NodeSerial.begin(57600);
 
@@ -25,30 +33,44 @@ void loop() {
 
   while (NodeSerial.available() > 0) 
   {
+  
+    String serialResponse = NodeSerial.readStringUntil('\n');
+  // Convert from String Object to String.
+  char sz[] = "100;100;100;7.0;100;1000;20.00";
 
-    /*int i_data = NodeSerial.parseInt(); 
-    int i_data2 = NodeSerial.parseInt(); 
-   // int i_data3 = NodeSerial.parseInt(); 
-
-    float f_data = NodeSerial.parseFloat(); 
-
-    if (NodeSerial.read() == '\n') 
-
+    char buf[sizeof(sz)];
+    serialResponse.toCharArray(buf, sizeof(buf));
+    char *p = buf;
+    char *str;
+    int i = 0;
+    int m = 0;
+    while ((str = strtok_r(p, ";", &p)) != NULL) // delimiter is the semicolon
     {
+     // Serial.println(str);
 
-          Serial.print("NodeMCU or ESP8266"); Serial.print(" : "); 
+      if(i == 2){
+        m = String(str).toInt();
+      }
+      
 
-          Serial.print(i_data); Serial.print(" : "); 
-          Serial.print(i_data2); Serial.print(" : "); 
-         // Serial.print(i_data3); Serial.print(" : "); 
+      i++;
+    }
 
-          Serial.println(f_data);  
 
-    }*/
+    if(m < 20)
+    {
+   // Serial.println(result); 
+    digitalWrite(RELAY1, turn_On);
+    digitalWrite(RELAY2, turn_On);
+    }
+    else
+    {
+       digitalWrite(RELAY1, turn_Off);
+      digitalWrite(RELAY2, turn_Off);
+    }
+  
 
-    String result = NodeSerial.readStringUntil('\n');
-    Serial.println(result); 
-
+    Serial.println(serialResponse);
     delay(100);
 
   }
