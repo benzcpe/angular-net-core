@@ -10,7 +10,6 @@
 //const char* ssid = "BENZ";
 //const char* password = "0850299990";
 
-
 #include <SoftwareSerial.h>
 
 SoftwareSerial NodeSerial(D2,D3); // RX | TX
