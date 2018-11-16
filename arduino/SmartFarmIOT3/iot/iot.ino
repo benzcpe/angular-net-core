@@ -1,3 +1,10 @@
+#include <Boards.h>
+#include <Firmata.h>
+#include <FirmataConstants.h>
+#include <FirmataDefines.h>
+#include <FirmataMarshaller.h>
+#include <FirmataParser.h>
+
 #include <ESP8266WiFi.h>
 
 //const char* ssid = "BENZ";
@@ -20,6 +27,12 @@ char ssid[] = "BENZ";
 char pass[] = "0850299990";
 
 BlynkTimer timer;
+
+// Configuration data from blynk
+int v6_autoWater = 0;
+int v7_waterIndicator = 0;
+int v30_turnOnWaterPoint = 20;
+int v31_turnOffWaterPoint = 80;
 
 
 String a;
@@ -96,24 +109,38 @@ void loop() {
       i++;
     }
 
-    if(forceOnWater <= 0)
-    {
-      if(M < 20)
-      {
-        digitalWrite(RELAY1, turn_On);
-        Blynk.virtualWrite(V6, 1);
-      }
-      else
-      {
-         digitalWrite(RELAY1, turn_Off);
-         Blynk.virtualWrite(V6, 0);
-      }
-    }
+   
 
     Serial.println(serialResponse);
     delay(100);
 
   }
+
+   if(forceOnWater <= 0 && v6_autoWater == 1)
+   {
+      if(M <= v30_turnOnWaterPoint && v7_waterIndicator == 0)
+      {
+        digitalWrite(RELAY1, turn_On);
+        Blynk.virtualWrite(V7, 1);
+
+        v7_waterIndicator = 1;
+
+        Serial.print("Water is auto on at M: ");  
+        Serial.println(M);       
+      }
+      else if(M >= v31_turnOffWaterPoint && v7_waterIndicator == 1)
+      {
+         digitalWrite(RELAY1, turn_Off);
+         Blynk.virtualWrite(V7, 0);
+
+         v7_waterIndicator = 0;
+
+         Serial.print("Water is auto off at M: ");
+         Serial.println(M);
+      }
+
+    
+   }
 
   delay(1000);
   forceOnWater--;
@@ -123,30 +150,56 @@ void loop() {
 }
 
 // Blynk
+BLYNK_CONNECTED() {
+    Blynk.syncAll();
+}
+
 // This function will be called every time Slider Widget
-// in Blynk app writes values to the Virtual Pin 6
- BLYNK_WRITE(V6)
+// in Blynk app writes values to the Virtual Pin 7
+ BLYNK_WRITE(V7)
 {
-  int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
+  v7_waterIndicator = param.asInt(); // assigning incoming value from pin V1 to a variable
   // You can also use:
   // String i = param.asStr();
   // double d = param.asDouble();
-  Serial.print("V6 Slider value is: ");
-  Serial.println(pinValue);
+  Serial.print("V7 Turn on/off water manual: ");
+  Serial.println(v7_waterIndicator);
 
-  if(pinValue == 1){
+  if(v7_waterIndicator == 1){
     digitalWrite(RELAY1, turn_On);
-    Blynk.virtualWrite(V6, 1);
+   // Blynk.virtualWrite(V6, 1);
   }
   else
   {
     digitalWrite(RELAY1, turn_Off);
-    Blynk.virtualWrite(V6, 0);
+   // Blynk.virtualWrite(V6, 0);
   }
 
-  // Stop auto on/off water if user force to open/close it from Blynk
-  forceOnWater = 60 * 60;
+  // Stop auto on/off water for 10 seconds if user force to open/close it from Blynk
+  forceOnWater = 10;
 }
+
+BLYNK_WRITE(V6)
+{
+   v6_autoWater = param.asInt(); 
+   Serial.print("V6 Auto water: ");
+   Serial.println(v6_autoWater);
+}
+
+BLYNK_WRITE(V30)
+{
+   v30_turnOnWaterPoint = param.asInt(); 
+   Serial.print("V30 Turn on water point: ");
+   Serial.println(v30_turnOnWaterPoint);
+}
+
+BLYNK_WRITE(V31)
+{
+   v31_turnOffWaterPoint = param.asInt(); 
+   Serial.print("V31 Turn off water point: ");
+   Serial.println(v31_turnOffWaterPoint);
+}
+
 
 
 // This function sends Arduino's up time every second to Virtual Pin (0).
