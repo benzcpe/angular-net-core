@@ -7,7 +7,7 @@
 
 #include <ESP8266WiFi.h>
 
-//const char* ssid = "BENZ";
+//const char* ssid = "Neb";
 //const char* password = "0850299990";
 
 #include <SoftwareSerial.h>
@@ -22,7 +22,7 @@ int RELAY2 = D6;
 // Blynk
 #include <BlynkSimpleEsp8266.h>
 char auth[] = "";
-char ssid[] = "BENZ";
+char ssid[] = "Neb";
 char pass[] = "0850299990";
 
 BlynkTimer timer;
@@ -114,6 +114,14 @@ void loop() {
     delay(100);
 
   }
+
+   // Test data
+    T = 26;
+    H = 40;
+    M = 50;
+    PH = 6.7;
+    CO2 = 412;
+    O2 = 20;
 
    if(forceOnWater <= 0 && v6_autoWater == 1)
    {
