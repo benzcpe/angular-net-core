@@ -7,9 +7,6 @@
 
 #include <ESP8266WiFi.h>
 
-//const char* ssid = "Neb";
-//const char* password = "0850299990";
-
 #include <SoftwareSerial.h>
 
 SoftwareSerial NodeSerial(D2,D3); // RX | TX
@@ -19,11 +16,18 @@ SoftwareSerial NodeSerial(D2,D3); // RX | TX
 int RELAY1 = D5;
 int RELAY2 = D6;
 
+// Line config
+#define LINE_TOKEN ""
+
+
+
+//#include <time.h>
+
 // Blynk
 #include <BlynkSimpleEsp8266.h>
 char auth[] = "";
-char ssid[] = "Neb";
-char pass[] = "0850299990";
+char ssid[] = "";
+char pass[] = "";
 
 BlynkTimer timer;
 
@@ -46,11 +50,7 @@ void setup() {
   Blynk.begin(auth, ssid, pass);
   // Setup a function to be called every second
   timer.setInterval(5000L, myTimerEvent);
-  
-  // You can also specify server:
-  //Blynk.begin(auth, ssid, pass, "blynk-cloud.com", 80);
-  //Blynk.begin(auth, ssid, pass, IPAddress(192,168,1,100), 8080);
-  
+
   Serial.begin(115200);
 
   pinMode(D2, INPUT); 
@@ -64,11 +64,10 @@ void setup() {
 
   NodeSerial.begin(57600);
 
+
 }
 
 void loop() {
-
-
   while (NodeSerial.available() > 0) 
   {
   
@@ -133,7 +132,9 @@ void loop() {
         v7_waterIndicator = 1;
 
         Serial.print("Water is auto on at M: ");  
-        Serial.println(M);       
+        Serial.println(M);    
+
+        Line_Notify("เปิดน้ำ (อัตโนมัติ)");
       }
       else if(M >= v31_turnOffWaterPoint && v7_waterIndicator == 1)
       {
@@ -144,6 +145,8 @@ void loop() {
 
          Serial.print("Water is auto off at M: ");
          Serial.println(M);
+
+           Line_Notify("ปิดน้ำ (อัตโนมัติ)");
       }
 
     
@@ -175,11 +178,14 @@ BLYNK_CONNECTED() {
   if(v7_waterIndicator == 1){
     digitalWrite(RELAY1, turn_On);
    // Blynk.virtualWrite(V6, 1);
+
+   Line_Notify("เปิดน้ำ (กำหนดเอง)");
   }
   else
   {
     digitalWrite(RELAY1, turn_Off);
    // Blynk.virtualWrite(V6, 0);
+    Line_Notify("ปิดน้ำ (กำหนดเอง)");
   }
 
   // Stop auto on/off water for 10 seconds if user force to open/close it from Blynk
@@ -224,5 +230,40 @@ void myTimerEvent()
   Blynk.virtualWrite(V4, CO2);
   Blynk.virtualWrite(V5, O2);
 
-  
+}
+
+  //////////////// LINE NOTIFY ////////////////////////////
+ void Line_Notify(String message) {
+  WiFiClientSecure client;
+
+  if (!client.connect("notify-api.line.me", 443)) {
+    Serial.println("connection failed");
+    return;   
+  }
+
+  String req = "";
+  req += "POST /api/notify HTTP/1.1\r\n";
+  req += "Host: notify-api.line.me\r\n";
+  req += "Authorization: Bearer " + String(LINE_TOKEN) + "\r\n";
+  req += "Cache-Control: no-cache\r\n";
+  req += "User-Agent: ESP8266\r\n";
+  req += "Connection: close\r\n";
+  req += "Content-Type: application/x-www-form-urlencoded\r\n";
+  req += "Content-Length: " + String(String("message=" + message).length()) + "\r\n";
+  req += "\r\n";
+  req += "message=" + message;
+  // Serial.println(req);
+  client.print(req);
+    
+  delay(20);
+
+  // Serial.println("-------------");
+  while(client.connected()) {
+    String line = client.readStringUntil('\n');
+    if (line == "\r") {
+      break;
+    }
+    //Serial.println(line);
+  }
+  // Serial.println("-------------");
 }
