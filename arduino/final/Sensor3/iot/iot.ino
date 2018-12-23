@@ -156,7 +156,7 @@ void loop() {
         Serial.print("Water is auto on at M: ");  
         Serial.println(M);    
 
-        Line_Notify("เปิดน้ำ (อัตโนมัติ) 1");
+        Line_Notify("เปิดน้ำ (อัตโนมัติ) 3");
       }
       else if(M >= v31_turnOffWaterPoint && v7_waterIndicator == 1)
       {
@@ -168,7 +168,7 @@ void loop() {
          Serial.print("Water is auto off at M: ");
          Serial.println(M);
 
-           Line_Notify("ปิดน้ำ (อัตโนมัติ) 1");
+           Line_Notify("ปิดน้ำ (อัตโนมัติ) 3");
       }
 
     
@@ -177,7 +177,7 @@ void loop() {
    if(T < v32_tempNotifyLow  || T > v33_tempNotifyHigh){  
     if(!tempNotify){
       tempNotify = true;
-      Line_Notify("อุณภูมิ 1: " + String(T) +" °C");
+      Line_Notify("อุณภูมิ 3: " + String(T) +" °C");
     }      
    }
    else
@@ -188,7 +188,7 @@ void loop() {
   if(PH < v34_phNotifyLow || PH > v35_phNotifyHigh){  
     if(!phNotify){
       phNotify = true;
-      Line_Notify("PH 1: " + String(PH));
+      Line_Notify("PH 3: " + String(PH));
     }      
    }
    else
@@ -199,7 +199,7 @@ void loop() {
   if(H < v36_humNotifyLow || H > v37_humNotifyHigh){  
     if(!humNotify){
       humNotify = true;
-      Line_Notify("ความชื้นสัมพัทธ์ 1: " + String(H) + "%");
+      Line_Notify("ความชื้นสัมพัทธ์ 3: " + String(H) + "%");
     }      
    }
    else
@@ -210,7 +210,7 @@ void loop() {
   if(CO2 < v38_co2NotifyLow || CO2 > v39_co2NotifyHigh){  
     if(!co2Notify){
       co2Notify = true;
-      Line_Notify("CO2 1: " + String(CO2) + " ppm");
+      Line_Notify("CO2 3: " + String(CO2) + " ppm");
     }      
    }
    else
@@ -221,7 +221,7 @@ void loop() {
   if(O2 < v40_o2NotifyLow || O2 > v41_o2NotifyHigh){  
     if(!o2Notify){
       o2Notify = true;
-      Line_Notify("O2 1: " + String(O2) + "%");
+      Line_Notify("O2 3: " + String(O2) + "%");
     }      
    }
    else
@@ -257,13 +257,13 @@ BLYNK_CONNECTED() {
     digitalWrite(RELAY1, turn_On);
    // Blynk.virtualWrite(V6, 1);
 
-   Line_Notify("เปิดน้ำ (กำหนดเอง)");
+   Line_Notify("เปิดน้ำ (กำหนดเอง) 3");
   }
   else
   {
     digitalWrite(RELAY1, turn_Off);
    // Blynk.virtualWrite(V6, 0);
-    Line_Notify("ปิดน้ำ (กำหนดเอง)");
+    Line_Notify("ปิดน้ำ (กำหนดเอง) 3");
   }
 
   // Stop auto on/off water for 10 seconds if user force to open/close it from Blynk
@@ -374,12 +374,12 @@ void myTimerEvent()
   //Serial.println("Test");
   // You can send any value at any time.
   // Please don't send more that 10 values per second.
-  Blynk.virtualWrite(V0, T);
-  Blynk.virtualWrite(V1, H);
-  Blynk.virtualWrite(V2, PH);
-  Blynk.virtualWrite(V3, M);
-  Blynk.virtualWrite(V4, CO2);
-  Blynk.virtualWrite(V5, O2);
+  Blynk.virtualWrite(V20, T);
+  Blynk.virtualWrite(V21, H);
+  Blynk.virtualWrite(V22, PH);
+  Blynk.virtualWrite(V23, M);
+  Blynk.virtualWrite(V24, CO2);
+  Blynk.virtualWrite(V25, O2);
 
 }
 

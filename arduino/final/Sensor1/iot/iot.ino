@@ -257,13 +257,13 @@ BLYNK_CONNECTED() {
     digitalWrite(RELAY1, turn_On);
    // Blynk.virtualWrite(V6, 1);
 
-   Line_Notify("เปิดน้ำ (กำหนดเอง)");
+   Line_Notify("เปิดน้ำ (กำหนดเอง) 1");
   }
   else
   {
     digitalWrite(RELAY1, turn_Off);
    // Blynk.virtualWrite(V6, 0);
-    Line_Notify("ปิดน้ำ (กำหนดเอง)");
+    Line_Notify("ปิดน้ำ (กำหนดเอง) 1");
   }
 
   // Stop auto on/off water for 10 seconds if user force to open/close it from Blynk
