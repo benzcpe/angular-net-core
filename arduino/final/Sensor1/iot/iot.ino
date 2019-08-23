@@ -25,8 +25,8 @@ int RELAY2 = D6;
 // Blynk
 #include <BlynkSimpleEsp8266.h>
 char auth[] = "f0f6c0287af44ce08a55ebe21f6d15c9";
-char ssid[] = "KANING HOME_2.4GHz";
-char pass[] = "0000000000";
+char ssid[] = "Neb";
+char pass[] = "0850299990";
 
 BlynkTimer timer;
 
@@ -72,7 +72,7 @@ void setup() {
   Serial.print("start wifi connection");  
   Blynk.begin(auth, ssid, pass);
   // Setup a function to be called every second
-  timer.setInterval(2000L, myTimerEvent);
+  timer.setInterval(10000L, myTimerEvent);
 
   Serial.begin(115200);
 
@@ -224,8 +224,7 @@ void loop() {
   }
 
 
-  delay(1000);
-  forceOnWater--;
+  delay(100);
 
   Blynk.run();
   timer.run(); 
@@ -261,7 +260,7 @@ BLYNK_CONNECTED() {
   }
 
   // Stop auto on/off water for 10 seconds if user force to open/close it from Blynk
-  forceOnWater = 10;
+  forceOnWater = 1;
 }
 
 BLYNK_WRITE(V6)
@@ -365,6 +364,9 @@ BLYNK_WRITE(V41)
 // that you define how often to send data to Blynk App.
 void myTimerEvent()
 {
+   Serial.println("-- run timer --");
+    forceOnWater--;
+
   //Serial.println("Test");
   // You can send any value at any time.
   // Please don't send more that 10 values per second.
