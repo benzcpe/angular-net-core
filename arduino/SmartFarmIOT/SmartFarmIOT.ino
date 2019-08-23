@@ -30,8 +30,8 @@ int RELAY2 = D2;
 
 
 // WIFI
-const char* ssid     = "BENZ";    // SSID Wifi
-const char* password = "0850299990";   // Password Wifi
+const char* ssid     = "KANING HOME_2.4GHz";    // SSID Wifi
+const char* password = "0000000000";   // Password Wifi
 
 const char* host = "api.thingspeak.com";    // Host ของ thingspeak ไม่ต้องแก้ไข
 const char* api   = "26CNRNMR7HEABR4K";  //API Key ที่เราจำไว้ ในขั้นต้นเมื่อกี้

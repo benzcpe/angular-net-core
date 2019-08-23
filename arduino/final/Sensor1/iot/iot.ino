@@ -17,16 +17,16 @@ int RELAY1 = D5;
 int RELAY2 = D6;
 
 // Line config
-#define LINE_TOKEN ""
+#define LINE_TOKEN "ZjBKLiGLuoRu5h6Qp8EagfonQaTkch4fAWClj7oteHe"
 
 
 //#include <time.h>
 
 // Blynk
 #include <BlynkSimpleEsp8266.h>
-char auth[] = "";
-char ssid[] = "";
-char pass[] = "";
+char auth[] = "f0f6c0287af44ce08a55ebe21f6d15c9";
+char ssid[] = "KANING HOME_2.4GHz";
+char pass[] = "0000000000";
 
 BlynkTimer timer;
 
@@ -69,9 +69,10 @@ int forceOnWater = 0;
 
 void setup() {
 
+  Serial.print("start wifi connection");  
   Blynk.begin(auth, ssid, pass);
   // Setup a function to be called every second
-  timer.setInterval(5000L, myTimerEvent);
+  timer.setInterval(2000L, myTimerEvent);
 
   Serial.begin(115200);
 
@@ -136,14 +137,7 @@ void loop() {
 
   }
 
-   // Test data
-    T = 26;
-    H = 40;
-    M = 50;
-    PH = 6.7;
-    CO2 = 412;
-    O2 = 20;
-
+   
    if(forceOnWater <= 0 && v6_autoWater == 1)
    {
       if(M <= v30_turnOnWaterPoint && v7_waterIndicator == 0)
@@ -380,7 +374,6 @@ void myTimerEvent()
   Blynk.virtualWrite(V3, M);
   Blynk.virtualWrite(V4, CO2);
   Blynk.virtualWrite(V5, O2);
-
 }
 
   //////////////// LINE NOTIFY ////////////////////////////
