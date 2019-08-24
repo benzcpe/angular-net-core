@@ -25,8 +25,8 @@ int RELAY2 = D6;
 // Blynk
 #include <BlynkSimpleEsp8266.h>
 char auth[] = "f0f6c0287af44ce08a55ebe21f6d15c9";
-char ssid[] = "Neb";
-char pass[] = "0850299990";
+char ssid[] = "Farm";
+char pass[] = "1234567890";
 
 BlynkTimer timer;
 
@@ -143,6 +143,7 @@ void loop() {
       if(M <= v30_turnOnWaterPoint && v7_waterIndicator == 0)
       {
         digitalWrite(RELAY1, turn_On);
+        digitalWrite(RELAY2, turn_On);
         Blynk.virtualWrite(V7, 1);
 
         v7_waterIndicator = 1;
@@ -155,6 +156,7 @@ void loop() {
       else if(M >= v31_turnOffWaterPoint && v7_waterIndicator == 1)
       {
          digitalWrite(RELAY1, turn_Off);
+         digitalWrite(RELAY2, turn_Off);
          Blynk.virtualWrite(V7, 0);
 
          v7_waterIndicator = 0;
@@ -248,6 +250,7 @@ BLYNK_CONNECTED() {
 
   if(v7_waterIndicator == 1){
     digitalWrite(RELAY1, turn_On);
+    digitalWrite(RELAY2, turn_On);
    // Blynk.virtualWrite(V6, 1);
 
    Line_Notify("เปิดน้ำ (กำหนดเอง) 1");
@@ -255,6 +258,7 @@ BLYNK_CONNECTED() {
   else
   {
     digitalWrite(RELAY1, turn_Off);
+    digitalWrite(RELAY2, turn_Off);
    // Blynk.virtualWrite(V6, 0);
     Line_Notify("ปิดน้ำ (กำหนดเอง) 1");
   }
@@ -380,7 +384,7 @@ void myTimerEvent()
 
   //////////////// LINE NOTIFY ////////////////////////////
  void Line_Notify(String message) {
-  WiFiClientSecure client;
+  /*WiFiClientSecure client;
 
   if (!client.connect("notify-api.line.me", 443)) {
     Serial.println("connection failed");
@@ -412,4 +416,5 @@ void myTimerEvent()
     //Serial.println(line);
   }
   // Serial.println("-------------");
+  */
 }

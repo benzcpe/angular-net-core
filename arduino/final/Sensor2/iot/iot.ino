@@ -26,8 +26,8 @@ int RELAY2 = D6;
 // Blynk
 #include <BlynkSimpleEsp8266.h>
 char auth[] = "f0f6c0287af44ce08a55ebe21f6d15c9";
-char ssid[] = "KANING HOME_2.4GHz";
-char pass[] = "0000000000";
+char ssid[] = "Farm";
+char pass[] = "1234567890";
 
 BlynkTimer timer;
 
@@ -72,7 +72,7 @@ void setup() {
 
   Blynk.begin(auth, ssid, pass);
   // Setup a function to be called every second
-  timer.setInterval(3000L, myTimerEvent);
+  timer.setInterval(10000L, myTimerEvent);
 
   Serial.begin(115200);
 
@@ -142,7 +142,8 @@ void loop() {
       if(M <= v30_turnOnWaterPoint && v7_waterIndicator == 0)
       {
         digitalWrite(RELAY1, turn_On);
-        Blynk.virtualWrite(V7, 1);
+        digitalWrite(RELAY2, turn_On);
+        Blynk.virtualWrite(V57, 1);
 
         v7_waterIndicator = 1;
 
@@ -154,7 +155,8 @@ void loop() {
       else if(M >= v31_turnOffWaterPoint && v7_waterIndicator == 1)
       {
          digitalWrite(RELAY1, turn_Off);
-         Blynk.virtualWrite(V7, 0);
+         digitalWrite(RELAY2, turn_Off);
+         Blynk.virtualWrite(V57, 0);
 
          v7_waterIndicator = 0;
 
@@ -223,7 +225,7 @@ void loop() {
   }
 
 
-  delay(1000);
+  delay(100);
   forceOnWater--;
 
   Blynk.run();
@@ -237,7 +239,7 @@ BLYNK_CONNECTED() {
 
 // This function will be called every time Slider Widget
 // in Blynk app writes values to the Virtual Pin 7
- BLYNK_WRITE(V7)
+ BLYNK_WRITE(V57)
 {
   v7_waterIndicator = param.asInt(); // assigning incoming value from pin V1 to a variable
   // You can also use:
@@ -248,6 +250,7 @@ BLYNK_CONNECTED() {
 
   if(v7_waterIndicator == 1){
     digitalWrite(RELAY1, turn_On);
+    digitalWrite(RELAY2, turn_On);
    // Blynk.virtualWrite(V6, 1);
 
    Line_Notify("เปิดน้ำ (กำหนดเอง) 2");
@@ -255,6 +258,7 @@ BLYNK_CONNECTED() {
   else
   {
     digitalWrite(RELAY1, turn_Off);
+    digitalWrite(RELAY2, turn_Off);
    // Blynk.virtualWrite(V6, 0);
     Line_Notify("ปิดน้ำ (กำหนดเอง) 2");
   }
@@ -378,6 +382,7 @@ void myTimerEvent()
 
   //////////////// LINE NOTIFY ////////////////////////////
  void Line_Notify(String message) {
+  /*
   WiFiClientSecure client;
 
   if (!client.connect("notify-api.line.me", 443)) {
@@ -409,5 +414,5 @@ void myTimerEvent()
     }
     //Serial.println(line);
   }
-  // Serial.println("-------------");
+  // Serial.println("-------------");*/
 }
