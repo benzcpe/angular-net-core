@@ -11,8 +11,8 @@
 
 SoftwareSerial NodeSerial(D2,D3); // RX | TX
 
-#define turn_On 0
-#define turn_Off 1
+#define turn_On 1
+#define turn_Off 0
 int RELAY1 = D5;
 int RELAY2 = D6;
 
